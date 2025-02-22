@@ -1,16 +1,38 @@
 document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("settings").addEventListener("click", function () {
-        chrome.runtime.openOptionsPage();
-    });
+    const settingsButton = document.getElementById("settings");
+    const getJobButton = document.getElementById("getJob");
 
-    document.getElementById("getJob").addEventListener("click", async () => {
+    if (settingsButton && !settingsButton.dataset.listenerAttached) {
+        settingsButton.addEventListener("click", function () {
+            chrome.runtime.openOptionsPage();
+        });
+        settingsButton.dataset.listenerAttached = true;
+    }
 
-        let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {console.log(tab.url);}
-    });
+    if (getJobButton && !getJobButton.dataset.listenerAttached) {
+        getJobButton.addEventListener("click", async () => {
+            let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab) {
 
-    document.getElementById("pingmsg").addEventListener("click", function () {
-        console.log("PINGED!");
-    });
+                
+                URL = tab.url;
 
+                chrome.runtime.sendMessage({data : URL}, (response) => { 
+                    console.log(response);
+                });
+
+                chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['background.js']
+                    // send arguemnts through here 
+                    // potentiall receive feedback from test.js file
+                })
+
+                .then(() => {
+                    console.log("Script executed successfully");
+                })
+            }
+        });
+        getJobButton.dataset.listenerAttached = true;
+    }
 });
