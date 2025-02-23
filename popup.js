@@ -1,6 +1,8 @@
-chrome.runtime.onMessage.addListener(function (message) {
-    document.getElementById('pagetitle').innerHTML = message;
-    console.log(message);
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'updatePopUp') {
+        document.getElementById('pagetitle').innerHTML = message.data;
+        console.log(message);
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {

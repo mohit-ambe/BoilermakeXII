@@ -19,6 +19,6 @@
     "<all_urls>"
   ],
   "permissions": [
-    "scripting"
+    "storage", "scripting"
   ]
 }
