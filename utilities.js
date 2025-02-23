@@ -1,43 +1,23 @@
-const puppeteer = require('puppeteer');
+chrome.runtime.sendMessage(scrapeJobListing());
 
-const LI_JOB_VIEW_XPATHS = {
-    title: '/html/body/main/section[1]/div/section[2]/div/div[1]/div/h1',
-    company: '/html/body/main/section[1]/div/section[2]/div/div[1]/div/h4/div[1]/span[1]/a',
-    location: '/html/body/main/section[1]/div/section[2]/div/div[1]/div/h4/div[1]/span[2]',
-    description: '//div[contains(@class, "show-more-less-html__markup show-more-less-html__markup--clamp-after-5")]'
-};
+function scrapeJobListing() {
+    const LI_JOB_VIEW_SELECTORS = {
+        title: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
+        company: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[1]/div[1]/div/a",
+        location: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[3]/div/span[1]",
+        description: '/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[4]/article/div/div[1]/div/p[1]'
+    };
 
-async function scrapeJobListing(url) {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    let title = document.evaluate(LI_JOB_VIEW_SELECTORS.title, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.innerText.trim() || "Title not found";
+    let company = document.evaluate(LI_JOB_VIEW_SELECTORS.company, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.innerText.trim() || "Company not found";
+    let location = document.evaluate(LI_JOB_VIEW_SELECTORS.location, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.innerText.trim() || "Location not found";
 
-    // Extract job details using document.evaluate
-    const jobDetails = await page.evaluate((xpaths) => {
-        function getTextFromXPath(xpath) {
-            const result = document.evaluate(xpath, document, null, XPathResult.STRING_TYPE, null);
-            return result.stringValue.trim() || null;
-        }
+    let descriptionElement = document.evaluate(LI_JOB_VIEW_SELECTORS.description, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    let description = descriptionElement ? descriptionElement.innerText.trim() : "Description not found";
 
-        const title = getTextFromXPath(xpaths.title);
-        const company = getTextFromXPath(xpaths.company);
-        const location = getTextFromXPath(xpaths.location);
+    let wageMatches = description.match(/(\$\d+\.\d{2}|\$\d+)/g);
+    let wage = wageMatches ? wageMatches.slice(0, 2).sort().join(" - ") : "Wage not found";
 
-        const descriptionNodes = document.evaluate(xpaths.description, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-        let description = "";
-        for (let i = 0; i < descriptionNodes.snapshotLength; i++) {
-            description += descriptionNodes.snapshotItem(i).textContent.trim();
-        }
-
-        // Extract wage using regex
-        const wageMatches = description.match(/(\$\d+\.\d{2}|\$\d+)/g) || [];
-        const wage = wageMatches.length >= 2 ? `${wageMatches[0]} - ${wageMatches[1]}` : "Not listed";
-
-        return { title, company, location, wage, description };
-    }, LI_JOB_VIEW_XPATHS);
-
-    await browser.close();
-
-    console.log(jobDetails.title, jobDetails.company, jobDetails.location, jobDetails.wage, jobDetails.description.slice(0, 80) + '...', '\n');
-    return jobDetails;
+    console.log(title, company, location, wage, description.substring(0, 80) + "...");
+    return `Added ${title} @ ${company} to your dashboard!`;
 }
