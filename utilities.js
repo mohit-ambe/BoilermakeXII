@@ -2,10 +2,10 @@ chrome.runtime.sendMessage(scrapeJobListing());
 
 function scrapeJobListing() {
     const LI_JOB_VIEW_SELECTORS = {
-        title: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
-        company: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[1]/div[1]/div/a",
-        location: "/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[3]/div/span[1]",
-        description: '/html/body/div[5]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[4]/article/div/div[1]/div/p[1]'
+        title: "/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[2]/div/h1",
+        company: "/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[1]/div[1]/div/a",
+        location: "/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[1]/div/div/div/div[3]/div/span[1]",
+        description: '/html/body/div[6]/div[3]/div[2]/div/div/main/div[2]/div[1]/div/div[4]/article/div/div[1]/div/p[1]'
     };
 
     let title = document.evaluate(LI_JOB_VIEW_SELECTORS.title, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.innerText.trim() || "Title not found";
